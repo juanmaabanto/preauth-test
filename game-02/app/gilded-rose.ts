@@ -1,3 +1,7 @@
+import {rules, RuleWithFactor} from './rules';
+
+const MIN_QUALITY = 0;
+
 export class Item {
   name: string;
   sellIn: number;
@@ -17,6 +21,10 @@ export class GildedRose {
       this.items = items;
   }
 
+  /**
+   * Updates the quality and value of items according to a set of rules
+   * @returns items updated
+   */
   updateQuality() {
     for (const item of this.items) {
         let rule = rules[item.name] as RuleWithFactor;
@@ -25,7 +33,7 @@ export class GildedRose {
         }
 
         let factor = 1;
-        if (rule) {
+        if (typeof rule.getFactor === 'function') {
             factor = rule.getFactor(item.sellIn);
         }
 
@@ -37,58 +45,4 @@ export class GildedRose {
   }
 }
 
-const MIN_QUALITY = 0;
 
-interface RuleBase {
-    increment: number;
-    days: number;
-    maxQuality: number;
-}
-
-interface RuleWithFactor extends RuleBase {
-    getFactor: (sellIn: number) => number;
-}
-
-type Rules = {
-    [key: string]: RuleBase | RuleWithFactor;
-};
-
-const rules: Rules = {
-    'Aged Brie': {
-        increment: 1,
-        days: -1,
-        maxQuality: 50
-    },
-    'Sulfuras, Hand of Ragnaros': {
-        increment: 0,
-        days: 0,
-        maxQuality: 80
-    },
-    'Backstage passes to a TAFKAL80ETC concert': {
-        increment: 1,
-        days: -1,
-        getFactor: function(sellIn: number): number {
-            if (sellIn < 0) {
-                return -50;
-            }
-            if (sellIn < 6) {
-                return 3;
-            }
-            if (sellIn < 11) {
-                return 2;
-            }
-            return 1;
-        },
-        maxQuality: 50
-    },
-    'Conjured': {
-        increment: -2,
-        days: -1,
-        maxQuality: 50
-    },
-    'Normal': {
-        increment: -1,
-        days: -1,
-        maxQuality: 50
-    }
-}
